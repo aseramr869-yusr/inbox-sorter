@@ -36,7 +36,7 @@ Success: the user ends with a list of senders to keep and a list to filter, in u
 
 ## States and Boundaries
 - **First use:** the paste screen is empty.
-- **No marks:** clicking "Sort my inbox" with nothing marked shows "Please mark at least one sender" and doesn't sort.
+- **Empty box:** clicking "Sort my inbox" with nothing pasted shows "Please paste at least one sender" and doesn't sort.
 - **Saved choices:** the user's decisions are saved in their browser and still there after a refresh. Nothing leaves the device.
 
 ## Product Decisions
