@@ -10,9 +10,9 @@ Source: `scope.md > The Core Loop, The POC Boundary`
 
 ## The Core Journey
 1. The user opens the page and sees a box to paste a sender list.
-2. The user pastes one sender per line and clicks "Sort my inbox."
-3. The user marks the senders that matter.
-4. The app suggests a decision for each unmarked sender.
+2. The user pastes one sender per line as `sender, how often` and clicks "Sort my inbox."
+3. The user clicks Keep or Filter on any sender to change its suggestion.
+4. The app suggests a decision for each sender.
 5. The user reviews the suggestions, changes any they disagree with, and sees the filtered list.
 Success: the user ends with a list of senders to keep and a list to filter, in under 5 minutes.
 
@@ -27,11 +27,11 @@ Success: the user ends with a list of senders to keep and a list to filter, in u
 
 ## Features and Behavior
 
-### Marking and suggesting
-- The user marks senders as important.
-- Unmarked senders get a suggestion:
-  - A person who doesn't email on a schedule: kept.
-  - A sender that emails weekly or more often: filtered.
+### Suggesting and deciding
+- Each sender gets a suggestion based on how often it emails:
+  - "daily" → Spam column, suggested Filter.
+  - "weekly" → Newsletters column, suggested Filter.
+  - Anything else, or no value → Keep column, suggested Keep.
 - The user can change any suggestion with the "Keep" or "Filter" buttons.
 
 ## States and Boundaries
@@ -42,7 +42,7 @@ Success: the user ends with a list of senders to keep and a list to filter, in u
 ## Product Decisions
 - The user decides what matters; the app only suggests. Reason: the user stays in control.
 - Nothing is sent to a server. Reason: privacy, and no login is needed.
-- Clicking sort with nothing marked does nothing except show a message. Reason: the user stays in control, and the app doesn't guess.
+- Clicking sort with an empty box does nothing except show a message. Reason: the app never sorts without input.
 
 ## What We're Building
 - Paste a sender list, mark senders, see suggestions, change them, and see the filtered result.
