@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inbox Sorter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* Light theme (default) */
+  :root {
+    --blue: #4285F4;
+    --red: #EA4335;
+    --yellow: #FBBC04;
+    --green: #34A853;
+    --bg: #ffffff;
+    --surface: #f8f9fa;
+    --card: #ffffff;
+    --ink: #202124;
+    --muted: #5f6368;
+    --line: #dadce0;
+    --hover: #f1f3f4;
+    --focus: #4285F4;
+    --shadow: rgba(60,64,67,0.14);
+    --tint-blue: #e8f0fe;
+    --tint-green: #e6f4ea;
+    --tint-red: #fce8e6;
+    --tint-yellow: #fef7e0;
+    --text-green: #137333;
+    --text-red: #c5221f;
+    --text-yellow: #b06000;
+    --text-yellow-head: #b98300;
+  }
+
+  /* Dark theme: same colors, lifted for contrast on dark backgrounds */
+  [data-theme="dark"] {
+    --blue: #8ab4f8;
+    --red: #f28b82;
+    --yellow: #fdd663;
+    --green: #81c995;
+    --bg: #202124;
+    --surface: #292a2d;
+    --card: #303134;
+    --ink: #e8eaed;
+    --muted: #9aa0a6;
+    --line: #5f6368;
+    --hover: #3c4043;
+    --focus: #8ab4f8;
+    --shadow: rgba(0,0,0,0.4);
+    --tint-blue: #394457;
+    --tint-green: #1e3a2a;
+    --tint-red: #4a2a29;
+    --tint-yellow: #4a3f1f;
+    --text-green: #81c995;
+    --text-red: #f28b82;
+    --text-yellow: #fdd663;
+    --text-yellow-head: #fdd663;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', Arial, sans-serif;
+    color: var(--muted);
+    background: var(--bg);
+    min-height: 100vh;
+    line-height: 1.6;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+    position: sticky; top: 0; z-index: 10;
+    animation: slideDown 0.4s ease both;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; font-family: 'Source Serif 4', Georgia, serif; font-size: 20px; font-weight: 700; color: var(--ink); }
+  .dots { display: flex; gap: 5px; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+  .dots i:nth-child(1) { background: var(--blue); }
+  .dots i:nth-child(2) { background: var(--red); }
+  .dots i:nth-child(3) { background: var(--yellow); }
+  .dots i:nth-child(4) { background: var(--green); }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .tagline { font-size: 13px; color: var(--muted); }
+
+  .container { max-width: 1040px; margin: 0 auto; padding: 40px 24px 72px; animation: fadeIn 0.5s ease; }
+  h1, h2 { font-family: 'Source Serif 4', Georgia, serif; color: var(--ink); margin: 0; }
+  h1 { font-size: 32px; margin-bottom: 8px; }
+  .intro { font-size: 15px; margin: 0 0 28px; line-height: 1.7; }
+  .example { color: var(--blue); font-weight: 600; }
+
+  /* Input box */
+  .input-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px var(--shadow), 0 4px 12px var(--shadow);
+    overflow: hidden;
+    animation: slideUp 0.5s ease both;
+    transition: box-shadow 0.25s;
+  }
+  .input-card:hover { box-shadow: 0 2px 6px var(--shadow), 0 8px 20px var(--shadow); }
+  .input-card:focus-within { border-color: var(--blue); }
+  .input-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; background: var(--surface); border-bottom: 1px solid var(--line);
+  }
+  .input-head .label { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .counter { font-size: 13px; color: var(--muted); }
+  .counter b { color: var(--blue); }
+  textarea {
+    display: block; width: 100%; height: 220px; padding: 18px 20px; border: none; outline: none; resize: vertical;
+    font-family: 'Inter', Arial, sans-serif; font-size: 15px; line-height: 1.8; color: var(--ink); background: var(--card);
+  }
+  textarea::placeholder { color: var(--muted); opacity: 0.7; }
+  .input-foot {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    padding: 14px 20px; border-top: 1px solid var(--line); background: var(--card);
+  }
+  .message { color: var(--text-red); font-weight: 600; font-size: 14px; min-height: 20px; }
+  .shake { animation: shake 0.4s; }
+
+  /* Buttons */
+  button {
+    font-family: 'Inter', Arial, sans-serif; border: none; border-radius: 8px; cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.2s, background 0.2s, color 0.2s;
+  }
+  button:hover { transform: translateY(-1px); box-shadow: 0 2px 6px var(--shadow); }
+  button:active { transform: scale(0.97); }
+  .primary { background: var(--blue); color: #ffffff; padding: 11px 24px; font-size: 14px; font-weight: 600; }
+  .primary:hover { filter: brightness(0.95); }
+  .secondary { background: var(--card); color: var(--blue); padding: 10px 18px; font-size: 14px; font-weight: 600; border: 1px solid var(--line); }
+  .secondary:hover { background: var(--tint-blue); }
+  .text-btn { background: none; color: var(--muted); padding: 10px 12px; font-size: 14px; font-weight: 500; box-shadow: none; }
+  .text-btn:hover { background: var(--hover); box-shadow: none; transform: none; }
+  .theme-btn { background: var(--hover); color: var(--ink); padding: 8px 14px; font-size: 13px; font-weight: 600; box-shadow: none; }
+  .theme-btn:hover { background: var(--line); box-shadow: none; }
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* Search */
+  .search {
+    width: 100%; padding: 12px 16px; font-family: 'Inter', Arial, sans-serif; font-size: 14px;
+    color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    outline: none; margin-bottom: 24px; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search::placeholder { color: var(--muted); opacity: 0.7; }
+  .search:focus { border-color: var(--blue); box-shadow: 0 0 0 4px var(--tint-blue); }
+
+  /* Stats */
+  .stats { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat {
+    flex: 1; min-width: 170px; background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 20px; border-left: 5px solid; animation: slideUp 0.4s ease both;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .stat:hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
+  .stat .num { font-family: 'Source Serif 4', Georgia, serif; font-size: 30px; font-weight: 700; }
+  .stat .lbl { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat.blue { border-left-color: var(--blue); } .stat.blue .num { color: var(--blue); }
+  .stat.green { border-left-color: var(--green); } .stat.green .num { color: var(--green); }
+  .stat.red { border-left-color: var(--red); } .stat.red .num { color: var(--red); }
+
+  /* Progress */
+  .progress-wrap { background: var(--hover); border-radius: 99px; height: 8px; overflow: hidden; margin-bottom: 32px; }
+  .progress { height: 100%; width: 0%; border-radius: 99px; background: var(--green); transition: width 0.6s ease; }
+
+  /* Columns */
+  .columns { display: flex; gap: 18px; align-items: flex-start; }
+  .column {
+    flex: 1; background: var(--surface); border-radius: 16px; padding: 16px; min-height: 260px;
+    border: 1px solid var(--line);
+  }
+  .col-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding: 4px 4px 12px; border-bottom: 3px solid; }
+  .column.keep .col-head { border-color: var(--green); }
+  .column.news .col-head { border-color: var(--yellow); }
+  .column.spam .col-head { border-color: var(--red); }
+  .column h2 { font-size: 19px; }
+  .column.keep h2 { color: var(--text-green); }
+  .column.news h2 { color: var(--text-yellow-head); }
+  .column.spam h2 { color: var(--text-red); }
+  .badge { font-size: 12px; font-weight: 700; min-width: 28px; text-align: center; padding: 3px 10px; border-radius: 99px; color: #ffffff; }
+  .column.keep .badge { background: var(--green); }
+  .column.news .badge { background: var(--yellow); color: #202124; }
+  .column.spam .badge { background: var(--red); }
+
+  /* Sender cards */
+  .sender-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px;
+    margin-bottom: 10px; display: flex; gap: 12px; align-items: flex-start;
+    animation: slideUp 0.35s ease both; transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .sender-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px var(--shadow); }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%; color: #ffffff; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 15px;
+  }
+  .info { flex: 1; min-width: 0; }
+  .sender { font-weight: 600; color: var(--ink); font-size: 14px; word-break: break-all; }
+  .reason { font-size: 12px; color: var(--muted); margin: 2px 0 10px; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 99px; margin-bottom: 6px; }
+  .pill.keep { background: var(--tint-green); color: var(--text-green); }
+  .pill.filter { background: var(--tint-red); color: var(--text-red); }
+  .pill.news { background: var(--tint-yellow); color: var(--text-yellow); }
+  .small { font-size: 12px; font-weight: 600; padding: 6px 14px; background: var(--hover); color: var(--ink); margin-right: 6px; }
+  .small.active-keep { background: var(--green); color: #ffffff; }
+  .small.active-filter { background: var(--red); color: #ffffff; }
+
+  .empty { font-size: 13px; color: var(--muted); text-align: center; margin-top: 50px; }
+  .hidden { display: none !important; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: none; } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  @keyframes pop { 0% { transform: scale(0.85); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
+  @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+  .pop { animation: pop 0.35s ease; }
+
+  /* Respect people who turn off motion in their system settings */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+
+  @media (max-width: 800px) {
+    .columns { flex-direction: column; }
+    .stats { flex-direction: column; }
+    header { padding: 14px 18px; }
+    .container { padding: 28px 18px 56px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="dots"><i></i><i></i><i></i><i></i></div> Inbox Sorter</div>
+  <div class="header-right">
+    <div class="tagline">Keep what matters. Filter the rest.</div>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">Dark mode</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Paste screen -->
+  <div id="pasteScreen">
+    <h1>Clean up your inbox</h1>
+    <p class="intro">Paste your senders, one per line, in this form: <b>sender, how often</b>.<br>
+       Example: <span class="example">news@shop.com, weekly</span></p>
+
+    <div class="input-card" id="inputCard">
+      <div class="input-head">
+        <span class="label">Your senders</span>
+        <span class="counter"><b id="lineCount">0</b> senders detected</span>
+      </div>
+      <textarea id="input" placeholder="news@shop.com, weekly&#10;mom@family.com, rarely&#10;deals@store.com, daily"></textarea>
+      <div class="input-foot">
+        <div class="btn-row">
+          <button class="primary" onclick="sortInbox()">Sort my inbox</button>
+          <button class="text-btn" onclick="loadExample()">Load example</button>
+          <button class="text-btn" onclick="clearAll()">Clear</button>
+        </div>
+        <div class="message" id="message"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Review screen -->
+  <div id="reviewScreen" class="hidden">
+    <h1>Review your senders</h1>
+    <p class="intro">Each card has a suggestion. Change any of them with the buttons.</p>
+
+    <input class="search" id="search" type="text" placeholder="Search senders" oninput="applySearch()">
+
+    <div class="stats">
+      <div class="stat blue"><div class="num" id="totalNum">0</div><div class="lbl">Total senders</div></div>
+      <div class="stat green"><div class="num" id="keepNum">0</div><div class="lbl">Keeping</div></div>
+      <div class="stat red"><div class="num" id="filterNum">0</div><div class="lbl">Filtering out</div></div>
+    </div>
+
+    <div class="progress-wrap"><div class="progress" id="progress"></div></div>
+
+    <div class="columns">
+      <div class="column keep">
+        <div class="col-head"><h2>Keep</h2><span class="badge" id="keepBadge">0</span></div>
+        <div id="keepList"></div>
+      </div>
+      <div class="column news">
+        <div class="col-head"><h2>Newsletters</h2><span class="badge" id="newsBadge">0</span></div>
+        <div id="newsList"></div>
+      </div>
+      <div class="column spam">
+        <div class="col-head"><h2>Spam</h2><span class="badge" id="spamBadge">0</span></div>
+        <div id="spamList"></div>
+      </div>
+    </div>
+
+    <div style="margin-top: 28px;">
+      <button class="secondary" onclick="backToPaste()">Back to list</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const STORAGE_KEY = "inboxSorterItems";
+  const THEME_KEY = "inboxSorterTheme";
+  const COLORS = ["#4285F4", "#EA4335", "#FBBC04", "#34A853"];
+  const EXAMPLE = "news@shop.com, weekly\nmom@family.com, rarely\ndeals@store.com, daily\nfriend@gmail.com, rarely\nnewsletter@techdaily.com, daily";
+  let items = [];
+
+  try {
+    items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch (e) {
+    items = [];
+  }
+
+  // Theme: remember the user's choice
+  function applyTheme(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    document.getElementById("themeBtn").textContent = theme === "dark" ? "Light mode" : "Dark mode";
+  }
+
+  function toggleTheme() {
+    const next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  }
+
+  try {
+    applyTheme(localStorage.getItem(THEME_KEY) || "light");
+  } catch (e) {
+    applyTheme("light");
+  }
+
+  // "daily" or "weekly" -> Filter; anything else -> Keep
+  function suggest(howOften) {
+    const h = (howOften || "").trim().toLowerCase();
+    return (h === "daily" || h === "weekly") ? "filter" : "keep";
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    } catch (e) {
+      document.getElementById("message").textContent =
+        "Your choices can't be saved in this browser, so they will be lost on refresh.";
+    }
+  }
+
+  function colorFor(text) {
+    let hash = 0;
+    for (let i = 0; i < text.length; i++) hash = text.charCodeAt(i) + ((hash << 5) - hash);
+    return COLORS[Math.abs(hash) % COLORS.length];
+  }
+
+  function parseLines() {
+    return document.getElementById("input").value
+      .split("\n").map(l => l.trim()).filter(l => l.length > 0);
+  }
+
+  // Live counter while typing
+  document.getElementById("input").addEventListener("input", () => {
+    const count = parseLines().length;
+    const el = document.getElementById("lineCount");
+    el.textContent = count;
+    el.classList.remove("pop");
+    void el.offsetWidth;
+    el.classList.add("pop");
+  });
+
+  function loadExample() {
+    document.getElementById("input").value = EXAMPLE;
+    document.getElementById("input").dispatchEvent(new Event("input"));
+    document.getElementById("message").textContent = "";
+  }
+
+  function sortInbox() {
+    const message = document.getElementById("message");
+    const card = document.getElementById("inputCard");
+    message.textContent = "";
+    const lines = parseLines();
+
+    if (lines.length === 0) {
+      message.textContent = "Please paste at least one sender.";
+      card.classList.remove("shake");
+      void card.offsetWidth;
+      card.classList.add("shake");
+      return;
+    }
+
+    items = lines.map(line => {
+      const parts = line.split(",");
+      const sender = parts[0].trim();
+      const howOften = (parts[1] || "rarely").trim();
+      return { sender, howOften, decision: suggest(howOften) };
+    });
+
+    save();
+    showReview();
+  }
+
+  function setDecision(index, decision) {
+    items[index].decision = decision;
+    save();
+    showReview();
+  }
+
+  function columnFor(item) {
+    if (item.decision === "keep") return "keep";
+    if (item.howOften.toLowerCase() === "daily") return "spam";
+    return "news";
+  }
+
+  // Hide cards that don't match the search text
+  function applySearch() {
+    const term = document.getElementById("search").value.trim().toLowerCase();
+    document.querySelectorAll(".sender-card").forEach(card => {
+      const match = card.dataset.sender.toLowerCase().includes(term);
+      card.classList.toggle("hidden", !match);
+    });
+  }
+
+  function showReview() {
+    document.getElementById("pasteScreen").classList.add("hidden");
+    document.getElementById("reviewScreen").classList.remove("hidden");
+
+    const lists = { keep: "keepList", news: "newsList", spam: "spamList" };
+    const badges = { keep: "keepBadge", news: "newsBadge", spam: "spamBadge" };
+    const totals = { keep: 0, news: 0, spam: 0 };
+
+    Object.values(lists).forEach(id => document.getElementById(id).innerHTML = "");
+
+    items.forEach((item, i) => {
+      const col = columnFor(item);
+      totals[col]++;
+      const isKeep = item.decision === "keep";
+      const pillClass = isKeep ? "keep" : (col === "spam" ? "filter" : "news");
+      const pillText = isKeep ? "Suggested: keep" : (col === "spam" ? "Suggested: spam" : "Suggested: newsletter");
+      const initial = item.sender.charAt(0).toUpperCase() || "?";
+
+      const div = document.createElement("div");
+      div.className = "sender-card";
+      div.dataset.sender = item.sender;
+      div.style.animationDelay = (i * 0.06) + "s";
+      div.innerHTML =
+        "<div class='avatar'>" + initial + "</div>" +
+        "<div class='info'>" +
+          "<span class='pill " + pillClass + "'>" + pillText + "</span>" +
+          "<div class='sender'></div>" +
+          "<div class='reason'></div>" +
+          "<button class='small " + (isKeep ? "active-keep" : "") + "' onclick='setDecision(" + i + ",\"keep\")'>Keep</button>" +
+          "<button class='small " + (!isKeep ? "active-filter" : "") + "' onclick='setDecision(" + i + ",\"filter\")'>Filter</button>" +
+        "</div>";
+      div.querySelector(".avatar").style.background = colorFor(item.sender);
+      div.querySelector(".sender").textContent = item.sender;
+      div.querySelector(".reason").textContent = "Sends " + item.howOften;
+      document.getElementById(lists[col]).appendChild(div);
+    });
+
+    Object.keys(lists).forEach(col => {
+      const badge = document.getElementById(badges[col]);
+      badge.textContent = totals[col];
+      badge.classList.remove("pop");
+      void badge.offsetWidth;
+      badge.classList.add("pop");
+      if (totals[col] === 0) {
+        document.getElementById(lists[col]).innerHTML = "<p class='empty'>No senders here yet.</p>";
+      }
+    });
+
+    const total = items.length;
+    const keeping = totals.keep;
+    document.getElementById("totalNum").textContent = total;
+    document.getElementById("keepNum").textContent = keeping;
+    document.getElementById("filterNum").textContent = total - keeping;
+    document.getElementById("progress").style.width = total ? (keeping / total * 100) + "%" : "0%";
+
+    applySearch();
+  }
+
+  function backToPaste() {
+    document.getElementById("reviewScreen").classList.add("hidden");
+    document.getElementById("pasteScreen").classList.remove("hidden");
+    document.getElementById("input").value = items
+      .map(i => i.sender + ", " + i.howOften).join("\n");
+    document.getElementById("input").dispatchEvent(new Event("input"));
+  }
+
+  function clearAll() {
+    document.getElementById("input").value = "";
+    document.getElementById("input").dispatchEvent(new Event("input"));
+    document.getElementById("message").textContent = "";
+  }
+
+  if (items.length > 0) showReview();
+</script>
+</body>
+</html>
