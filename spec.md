@@ -12,8 +12,8 @@ We chose one file because it's the simplest thing that works, needs no install, 
 
 ## The Core Journey Through the System
 1. The user opens `index.html` in a browser.
-2. The user pastes senders and clicks "Sort my inbox." The code checks that at least one sender is marked. If not, it shows the message.
-3. The code suggests Keep or Filter for each sender, and the review screen shows the three columns.
+2. The user pastes senders, one per line as `sender, how often`, and clicks "Sort my inbox." If the box is empty, the app shows "Please paste at least one sender."
+3. The code suggests a decision for each sender and shows the review screen with three columns.
 4. The user clicks Keep or Filter on any sender. The choice is saved in the browser.
 5. After a refresh, the saved choices are still there.
 PRD ref: `prd.md > The Core Journey`
@@ -39,7 +39,10 @@ Title, the sender box, and the "Sort my inbox" button.
 PRD ref: `prd.md > Screens and Layout`
 
 ### Suggestion logic
-Reads each line as `sender, how often` and suggests Filter for "daily" or "weekly," otherwise Keep.
+- "daily" → Spam column, suggested Filter.
+- "weekly" → Newsletters column, suggested Filter.
+- Any other value, or no value → Keep column, suggested Keep.
+- Keep = the user marks the sender as important. Filter = the sender is removed.
 PRD ref: `prd.md > Features and Behavior`
 
 ### Review screen
